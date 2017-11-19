@@ -10,7 +10,7 @@ upper = np.array([93,255,255])
 #initialize capture device
 #using skvideo.io.vread as workaround because cv2 wasn't working
 #sudo pip install sk-video
-cap = vread('tape-vid.mp4')
+cap = vread('../tape-vid.mp4')
 
 for frame in cap:
 
