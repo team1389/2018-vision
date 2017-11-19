@@ -2,6 +2,7 @@ import numpy as np
 import cv2
 import time
 from skvideo.io import vread
+from networktables import NetworkTables
 
 #set HSV vars for later use
 lower = np.array([85,50,50])
@@ -11,6 +12,9 @@ upper = np.array([93,255,255])
 #using skvideo.io.vread as workaround because cv2 wasn't working
 #sudo pip install sk-video
 cap = vread('../tape-vid.mp4')
+
+NetworkTables.initialize()
+sd = NetworkTables.getTable("MotionTracking")
 
 for frame in cap:
 
@@ -81,11 +85,12 @@ for frame in cap:
     cv2.line(frame, (trueCenterX, centerY), center, (0,255,0), 2)
     cv2.line(frame, (trueCenterX, trueCenterY), (trueCenterX, centerY), (0,0,255), 2)
 
-    lengthOffset = trueCenterX-centerX
-    heightOffset = trueCenterY-centerY
+    #write offsets to the network table 'MotionTracking'
+    sd.putNumber('offsetX', trueCenterX-centerX)
+    sd.putNumber('offsetY', trueCenterY-centerY)
 
     cv2.imshow("frame", frame)
-    time.sleep(.025)
+    time.sleep(.05)
     cv2.waitKey(1)
 
 cv2.destroyAllWindows()
