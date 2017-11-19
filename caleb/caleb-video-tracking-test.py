@@ -63,13 +63,29 @@ for frame in cap:
     cv2.circle(frame,(cx2,cy2), 5, (0,0,255), -1)
 
     # Next steps: find the center point between the two pieces of tape
-    center = (round((cx1 + cx2)/2), round((cy1 + cy2)/2))
+    centerX = round((cx1 + cx2)/2)
+    centerY = round((cy1 + cy2)/2)
+    center = (centerX, centerY)
     cv2.circle(frame, center, 5, (255,0,0), -1)
     height, width, channels = frame.shape
     frame_center = (width, height)
 
+    #find height and width of the actual frame and than mark the center
+    height, width = frame.shape[:2]
+    trueCenterX = int(width/2)
+    trueCenterY = int(height/2)
+    cv2.circle(frame, (trueCenterX, trueCenterY), 5, (0,0,0), -1)
+
+    #draw triangle from the center of the image to the center of the tape pieces
+    cv2.line(frame, (trueCenterX, trueCenterY), center, (255,0,0), 2)
+    cv2.line(frame, (trueCenterX, centerY), center, (0,255,0), 2)
+    cv2.line(frame, (trueCenterX, trueCenterY), (trueCenterX, centerY), (0,0,255), 2)
+
+    lengthOffset = trueCenterX-centerX
+    heightOffset = trueCenterY-centerY
+
     cv2.imshow("frame", frame)
-    #time.sleep(.05)
+    time.sleep(.025)
     cv2.waitKey(1)
 
 cv2.destroyAllWindows()
