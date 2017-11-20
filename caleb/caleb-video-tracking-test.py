@@ -4,6 +4,9 @@ import time
 from skvideo.io import vread
 from networktables import NetworkTables
 
+#stable determines if you want to stabilize the image or not
+stable = False;
+
 #set HSV vars for later use
 lower = np.array([85,50,50])
 upper = np.array([93,255,255])
@@ -74,23 +77,36 @@ for frame in cap:
     height, width, channels = frame.shape
     frame_center = (width, height)
 
-    #find height and width of the actual frame and than mark the center
+    #find height and width of the actual frame
     height, width = frame.shape[:2]
     trueCenterX = int(width/2)
     trueCenterY = int(height/2)
-    cv2.circle(frame, (trueCenterX, trueCenterY), 5, (0,0,0), -1)
 
-    #draw triangle from the center of the image to the center of the tape pieces
-    cv2.line(frame, (trueCenterX, trueCenterY), center, (255,0,0), 2)
-    cv2.line(frame, (trueCenterX, centerY), center, (0,255,0), 2)
-    cv2.line(frame, (trueCenterX, trueCenterY), (trueCenterX, centerY), (0,0,255), 2)
+    if(stable):
+        M = np.float32([[1,0,(trueCenterX-centerX)],[0,1,(trueCenterY-centerY)]])
+        dst = cv2.warpAffine(frame,M,(width,height))
+
+        cv2.circle(dst, (trueCenterX, trueCenterY), 2, (255,255,255), -1)
+
+        cv2.imshow("frame", dst)
+        time.sleep(.05)
+        cv2.waitKey(1)
+    else:
+        #mark center of actual frame
+        cv2.circle(frame, (trueCenterX, trueCenterY), 2, (0,0,0), -1)
+
+        #draw triangle from the center of the image to the center of the tape pieces
+        cv2.line(frame, (trueCenterX, trueCenterY), center, (255,0,0), 2)
+        cv2.line(frame, (trueCenterX, centerY), center, (0,255,0), 2)
+        cv2.line(frame, (trueCenterX, trueCenterY), (trueCenterX, centerY), (0,0,255), 2)
+
+        cv2.imshow("frame", frame)
+        time.sleep(.05)
+        cv2.waitKey(1)
 
     #write offsets to the network table 'MotionTracking'
     sd.putNumber('offsetX', trueCenterX-centerX)
     sd.putNumber('offsetY', trueCenterY-centerY)
 
-    cv2.imshow("frame", frame)
-    time.sleep(.05)
-    cv2.waitKey(1)
 
 cv2.destroyAllWindows()
