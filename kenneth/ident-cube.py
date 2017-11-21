@@ -8,18 +8,20 @@ from matplotlib import pyplot as plt
 img = mpimg.imread("../cube.jpg")
 
 hsv = cv2.cvtColor(img, cv2.COLOR_RGB2HSV)
-cv2.namedWindow("res", cv2.WINDOW_NORMAL)
 cv2.namedWindow("closed", cv2.WINDOW_NORMAL)
 cv2.namedWindow("eroded", cv2.WINDOW_NORMAL)
 cv2.namedWindow("opened", cv2.WINDOW_NORMAL)
+cv2.resizeWindow("closed", 480, 360)
+cv2.resizeWindow("eroded", 480, 360)
+cv2.resizeWindow("opened", 480, 360)
+
 # below values dont make sense, H is converted & makes sense, S&V don't make sense
 #numbers only work if we use BGR2HSV
 lower = np.array([15,90,90])  # HSV
 upper = np.array([45,255,255])
 res = cv2.inRange(hsv, lower, upper)
-cv2.imshow("res", res);
 
-kernel = np.ones((5,5),np.uint8)
+kernel = np.ones((11,11),np.uint8)
 
 # The morphological 'open' operation is described here:
 # https://docs.opencv.org/trunk/d9/d61/tutorial_py_morphological_ops.html
