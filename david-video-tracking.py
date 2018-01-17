@@ -8,8 +8,8 @@ import cv2
 
 # Define the lower and upper boundaries of the color we need
 # This is not easy to do, I'll try to explain some techniques in another document
-lower = np.array([85,50,50])  # HSV
-upper = np.array([93,255,255])
+lower = np.array([85,40,40])  # HSV
+upper = np.array([97,200,255])
 
 # A kernal is like a matrix that is used in the morphology operation
 # See https://en.wikipedia.org/wiki/Kernel_(image_processing) if interested
@@ -35,7 +35,7 @@ while(True):
     # Convert the image from RGB to HSV color space.  This is required for the next operation.
     hsv = cv2.cvtColor(img, cv2.COLOR_RGB2HSV)
 
-    # Create a new image that contains yellow where the color was detected, otherwise purple
+    # Create a new image that contains yellow where the color was detected, otherwise purple? or black?
     res = cv2.inRange(hsv, lower, upper)
 
     # The morphological 'open' operation is described here:
