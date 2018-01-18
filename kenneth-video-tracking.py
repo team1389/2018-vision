@@ -5,19 +5,28 @@ import cv2
 #track yellow cube, put bounding box and display center
 #press q to close video window
 
-kernel = np.ones((5,5), np.uint8)
+
 #setting up size of display 
 cv2.namedWindow("frame", cv2.WINDOW_NORMAL)
-cv2.resizeWindow("frame", 900,900)
+cv2.resizeWindow("frame", 100,100)
+cv2.namedWindow("detect", cv2.WINDOW_NORMAL)
+cv2.resizeWindow("detect", 100,100)
 
-cap = cv2.VideoCapture('./cube2.mp4')
+lower = np.array([85,40,40])  # HSV
+upper = np.array([100,200,280])
+
+kernel = np.ones((31,31), np.uint8)
+
+cap = cv2.VideoCapture(0)
+
 while(True):
 	#setting up size of display window 
 	#reading every frame
 	ret, img = cap.read()
-	lower = np.array([85,50,50])  # HSV
+	cv2.imshow('frame', img)
+	#lower = np.array([lH,lS,lV])
+	#upper = np.array([hH,hS,hV])
 	#increased upper HSV vals	
-	upper = np.array([100,255,255])
 	if cv2.waitKey(1) & 0xFF == ord('q'):
         	break
 	    # Our operations on the frame come here
@@ -39,7 +48,7 @@ while(True):
 	   
 	    # Blurring operation helps forthcoming findContours operation work better
 	    # The values here can be adjusted to tune the detection quality.  (3,3) is a decent starting point
-	blur = cv2.blur(opened, (3,3))
+	blur = cv2.blur(opened, (1,1))
 	    
 	    # Find contours
 	(_, cnts, _) = cv2.findContours(blur.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)    
@@ -65,7 +74,20 @@ while(True):
 	cy1 = int(M1['m01']/M1['m00'])
 	#draw center of cube on image
 	cv2.circle(blur,(cx1,cy1), 50, (0,100,100))
-	cv2.imshow('frame', blur)
+	cv2.imshow('detect', blur)
+
+using namespace cv;
+
+# Global Variables
+const int hue_slider_max = 255;
+int hue_slider;
+double hue
+const int saturation_slider_max = 255;
+int saturation_slider;
+double saturation
+const int value_slider_max = 255;
+int value_slider;
+
 
 # When everything done, release the capture
 cap.release()
