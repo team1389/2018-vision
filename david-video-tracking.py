@@ -3,6 +3,16 @@
 # From https://opencv-python-tutroals.readthedocs.io/en/latest/py_tutorials/py_gui/py_video_display/py_video_display.html#display-video
 # press 'q' key to close video window when it's in the foreground
 
+# SAVE:
+# color notes jan 20:
+# used pyimage utility with sliders to determine color range on video
+# didn't have a cube with me.  used yellow climbing gym holds
+# for yellow handles at climbing gym:
+# H: 0-75
+# S: 130-255
+# V: 70-175
+
+
 import numpy as np
 import cv2
 
@@ -33,22 +43,22 @@ while(True):
         break
 
     # Convert the image from RGB to HSV color space.  This is required for the next operation.
-    hsv = cv2.cvtColor(img, cv2.COLOR_RGB2HSV)
+    img = cv2.cvtColor(img, cv2.COLOR_RGB2HSV)
 
     # Create a new image that contains yellow where the color was detected, otherwise purple? or black?
-    res = cv2.inRange(hsv, lower, upper)
+    img = cv2.inRange(img, lower, upper)
 
     # The morphological 'open' operation is described here:
     # https://docs.opencv.org/trunk/d9/d61/tutorial_py_morphological_ops.html
     # It helps remove noise and jagged edges, note how the stray speckles are removed!
-    opened = cv2.morphologyEx(res, cv2.MORPH_OPEN, kernel)
+    img = cv2.morphologyEx(img, cv2.MORPH_OPEN, kernel)
    
     # Blurring operation helps forthcoming findContours operation work better
     # The values here can be adjusted to tune the detection quality.  (3,3) is a decent starting point
-    blur = cv2.blur(opened, (3,3))
+    img = cv2.blur(img, (3,3))
     
     # Find contours
-    (_, cnts, _) = cv2.findContours(blur.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)    
+    (_, cnts, _) = cv2.findContours(img.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)    
 
     # Sometimes the contours operation will find more than one contour
     # But if we did all our preliminary operations properly, then the contour we need will be
@@ -65,9 +75,9 @@ while(True):
         rect1 = np.int32(cv2.boxPoints(cv2.minAreaRect(cnt1)))
         
         # Draw the contour in red (255, 0, 0) on top of our original image
-        cv2.drawContours(blur, [rect1], -1, (255, 0, 0), 2)
+        cv2.drawContours(img, [rect1], -1, (255, 0, 0), 2)
     
-    cv2.imshow('frame', blur)
+    cv2.imshow('frame', img)
 
 # When everything done, release the capture
 cap.release()
