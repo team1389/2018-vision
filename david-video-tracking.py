@@ -12,7 +12,6 @@
 # S: 130-255
 # V: 70-175
 
-
 import numpy as np
 import cv2
 
@@ -26,8 +25,8 @@ upper = np.array([97,200,255])
 # It's important to understand the basics of this operation so that you know
 # what changing these values does.  These values should be experimented with
 # to optimize detection.  Values like (4,4) are a reasonable starting point.
-kernel = np.ones((6,6),np.uint8)
-
+erosion_kernel = np.ones((4,4),np.uint8)
+dilation_kernel = np.ones((6,6),np.uint8)
 cap = cv2.VideoCapture(0)
 
 while(True):
@@ -51,8 +50,14 @@ while(True):
     # The morphological 'open' operation is described here:
     # https://docs.opencv.org/trunk/d9/d61/tutorial_py_morphological_ops.html
     # It helps remove noise and jagged edges, note how the stray speckles are removed!
-    img = cv2.morphologyEx(img, cv2.MORPH_OPEN, kernel)
-   
+    # img = cv2.morphologyEx(img, cv2.MORPH_OPEN, kernel)
+  
+    # Try an Erosion here for noise/speckle reduction
+    img = cv2.erode(img, erosion_kernel, iterations = 1)
+
+    # Try a Dilation operation here to re-group the object(s)
+    img = cv2.dilate(img, dilation_kernel, iterations = 1)
+
     # Blurring operation helps forthcoming findContours operation work better
     # The values here can be adjusted to tune the detection quality.  (3,3) is a decent starting point
     img = cv2.blur(img, (3,3))
