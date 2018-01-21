@@ -1,26 +1,28 @@
 import numpy as np
 import cv2
-#Still untested with live video on both computer and ps eye
-#working with video from phone
-#track yellow cube, put bounding box and display center
-#press q to close video window
+import os
+#working with some noise using ps eye on pi, with lighting from above
+#determined that I couldn't pick up both directly illuminated and semi-illuminated surfaces, this is tuned for semi-illuminated
 
 
+#restore defaults for cam
+os.system('v4l2-ctl -c exposure=120')
+os.system('v4l2-ctl -c contrast=32')
 #setting up size of display 
 cv2.namedWindow("frame", cv2.WINDOW_NORMAL)
 cv2.resizeWindow("frame", 100,100)
 cv2.namedWindow("original", cv2.WINDOW_NORMAL)
 cv2.resizeWindow("original", 100,100)
 	
-#erosionKernel = np.ones((15,15), np.uint8)
-#dilateKernel = np.ones((7,7), np.uint8)
-erosionKernel = np.ones((9,9), np.uint8)
+#could increase erosion to deal with picking up brighter shades,but as it increases, we lose our ability to pick up sides not facing the cam directly
+erosionKernel = np.ones((15,15), np.uint8)
 dilateKernel = np.ones((3,3), np.uint8)
+
 #as we raise S value, we stop registering brighter shades
 #determine how important seeing said brighter shades
 #at current vals, unable to see side being illuminated from most angles
 lower = np.array([15,120,114])  # HSV
-upper = np.array([29,255,255])
+upper = np.array([32,255,255])
 
 
 cap = cv2.VideoCapture(0)
