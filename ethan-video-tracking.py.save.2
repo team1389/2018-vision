@@ -1,0 +1,83 @@
+import numpy as np 
+import cv2
+
+#Changing colors to match green led ringlight
+#Adding all the trackbars
+#tracks yellow cube, put bounding box and display center
+#doesn't start unless detecting cube
+#press q to close video window
+
+
+#setting up size of display 
+cv2.namedWindow("frame", cv2.WINDOW_NORMAL)
+cv2.resizeWindow("frame", 100,100)
+cv2.namedWindow("detect", cv2.WINDOW_NORMAL)
+cv2.resizeWindow("detect", 100,100)
+
+kernel = np.ones((31,31), np.uint8)
+
+#Captures Video
+cap = cv2.VideoCapture(0)
+
+#Creates Window named HSVBars
+cv2.namedWindow('HSVBars')
+
+#Strings because I'm lazy
+
+wnd = 'HSVBars'
+hl = 'Hue Low'
+hh = 'Hue High'
+sl = 'Saturation Low'
+sh = 'Saturation High'
+vl = 'Value Low'
+vh = 'Value High'
+
+#Trackbars for all variables
+
+cv2.createTrackbar(hl, wnd, 0, 179, lambda:none)
+cv2.createTrackbar(hh, wnd, 0, 179, lambda:none)
+cv2.createTrackbar(sl, wnd, 0, 255, lambda:none)
+cv2.createTrackbar(sh, wnd, 0, 255, lambda:none)
+cv2.createTrackbar(vl, wnd, 0, 255, lambda:none)
+cv2.createTrackbar(vh, wnd, 0, 255, lambda:none)
+
+while(True):
+	#reading every frame
+	ret, img = cap.read()
+
+	#Read trackbar changes
+	thl = cv2.getTrackbarPos(hl, wnd)
+	thh = cv2.getTrackbarPos(hh, wnd)
+	tsl = cv2.getTrackbarPos(sl, wnd)
+	tsh = cv2.getTrackbarPos(sh, wnd)
+	tvl = cv2.getTrackbarPos(vl, wnd)
+	tvh = cv2.getTrackbarPos(vh, wnd)
+
+	#Array for final values
+	HSVLOW = np.array([thl, tsl, tvl])
+	HSVHIGH = np.array([thh, tsh, tvh])
+
+	#Creates mask for range
+	mask = cv2.inRange(hsv, HSVLOW, HSVHIGH)
+
+	res = cv2.bitwise_and(frame, frame, mask = mask)
+
+#read the streamed frames (we previously named this cap)
+    _,frame=cap.read()
+ 
+    #it is common to apply a blur to the frame
+    frame=cv2.GaussianBlur(frame,(5,5),0)
+ 
+    #convert from a BGR stream to an HSV stream
+    hsv=cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)#draw center of cube on image
+	cv2.circle(blur,(cx1,cy1), 50, (0,100,100))
+	cv2.imshow('detect', blur)
+	blur = cv2.blur(opened, (1,1))
+	    
+# When everything done, release the capture
+	cv2.imshow('frame', img)
+
+	if cv2.waitKey(1) & 0xFF == ord('q'):
+		break		
+cap.release()
+cv2.destroyAllWindows()
