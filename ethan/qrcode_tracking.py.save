@@ -1,0 +1,54 @@
+#!/usr/bin/python
+
+import numpy as np
+import cv2
+import zbar
+import os
+
+#restore defaults for cam
+os.system('v4l2-ctl -c exposure=12q0')
+os.system('v4l2-ctl -c contrast=32')
+
+#Creating Windows
+cv2.namedWindow("original", cv2.WINDOW_NORMAL)
+cv2.resizeWindow("original", 100, 100)
+cv2.namedWindow("frame", cv2.WINDOW_NORMAL)
+cv2.resizeWindow("frame", 100, 100)
+
+#Determine whether contour is good or not
+def contour_debatable(c):
+	#find contour
+	peri = cv2.arcLength(c, True)
+	approx = cv2.approxPolyDP(c, 0.02 * peri, True)
+
+	#contour has to have 4 sides
+	return not len(approx) == 4
+
+	# Make the ting grayscale
+	gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+
+	#ret is return and thresh is threshold
+	ret, thresh = cv2.threshold(gray, 127, 2, 0)
+	im2, contours, hierarchy = cv2.findContours(thresh, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+	mask = np.ones(image.shape[:2], dtype="uint8") * 255
+	for c in contours:
+		# If a contour is bad, draw it on mask
+		if contour_debatable(c):
+			print(c)
+			print("haha")
+			cv2.drawContours(image, contours, -1, (0, 255, 0), 3)
+	
+		image = cv2.bitwise_and(image, image, mask=mask)
+	return None
+
+while(True):
+	error = 0
+
+	# Reading every frame
+	ret, img = cap.read()
+	default = img
+	height, width = img.shape[:2]
+
+	# Turn off when "q" is hit
+	if cv2.waitKey(1) & OxFF == ord('q'):
+		break 

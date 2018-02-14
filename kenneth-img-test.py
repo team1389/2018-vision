@@ -1,12 +1,13 @@
 import numpy as np
 import cv2
-img = cv2.imread('./cube.jpg')
+#embarassingly enough, just realised HSV vals based on base img, not post conversion
+img = cv2.imread('./cubestack1.jpg')
 
 cv2.namedWindow("frame", cv2.WINDOW_NORMAL)
 
-cv2.resizeWindow("frame", 900,900)
+cv2.resizeWindow("frame", 100,100)
 cv2.namedWindow("original", cv2.WINDOW_NORMAL)
-cv2.resizeWindow("original", 900,900)
+cv2.resizeWindow("original", 100,100)
 
 
 
@@ -14,11 +15,11 @@ cv2.resizeWindow("original", 900,900)
 erosionKernel = np.ones((3,3), np.uint8)
 dilateKernel = np.ones((3,3), np.uint8)
 
-lower = np.array([15,125,125])  # HSV
+lower = np.array([15,114,114])  # HSV
 
 	#increased upper HSV vals	
 
-upper = np.array([40,255,255])
+upper = np.array([32,255,255])
 default = img;
 		    # Display the resulting frame
 		    # cv2.imshow('frame', img)
@@ -32,10 +33,10 @@ img = cv2.inRange(hsv, lower, upper)
 
 	  
 	    # Try an Erosion here for noise/speckle reduction
-	#img = cv2.erode(img, erosionKernel, iterations = 1)
+img = cv2.erode(img, erosionKernel, iterations = 1)
 
 	    # Try a Dilation operation here to re-group the object(s)
-	#img = cv2.dilate(img, dilateKernel, iterations = 1)
+img = cv2.dilate(img, dilateKernel, iterations = 1)
 		   
 		    # Blurring operation helps forthcoming findContours operation work better
 		    # The values here can be adjusted to tune the detection quality.  (3,3) is a decent starting point
@@ -56,15 +57,15 @@ if len(contours) > 0:
 	cnt1 = contours[0]
 		
 		# Draw a minimum area rectangle around the contour
-#rect1 = np.int32(cv2.boxPoints(cv2.minAreaRect(cnt1)))
+rect1 = np.int32(cv2.boxPoints(cv2.minAreaRect(cnt1)))
 		
 		# Draw the contour over image
-#cv2.drawContours(img, [rect1], -1, (255, 0, 0), 2)
-#M1 = cv2.moments(cnt1)
-#cx1 = int(M1['m10']/M1['m00'])
-#cy1 = int(M1['m01']/M1['m00'])
+cv2.drawContours(img, [rect1], -1, (255, 0, 0), 2)
+M1 = cv2.moments(cnt1)
+cx1 = int(M1['m10']/M1['m00'])
+cy1 = int(M1['m01']/M1['m00'])
 #draw center of cube on image
-#cv2.circle(img,(cx1,cy1), 50, (0,100,100))
+cv2.circle(img,(cx1,cy1), 50, (0,100,100))
 cv2.imshow('frame', img)
 cv2.imshow('original', default)
 

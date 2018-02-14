@@ -1,41 +1,61 @@
-import numpy as np
+#!/usr/bin/env python
 import cv2
+import numpy as np
 import os
+from networktables import NetworkTables
+import logging
+logging.basicConfig(level=logging.DEBUG)
 #working with some noise using ps eye on pi, with lighting from above
 #determined that I couldn't pick up both directly illuminated and semi-illuminated surfaces, this is tuned for semi-illuminated
+#28 inches for arm from center of robot to end
+#minimum distance to pick up well is 21 inches with [28, 40, 125] - [75, 175, 230]
 
-
+#cube area at 96 inches away is about 1900
+# noise max is about 50
 #restore defaults for cam
-os.system('v4l2-ctl -c exposure=120')
+os.system('v4l2-ctl -c exposure=12q0')
 os.system('v4l2-ctl -c contrast=32')
-#setting up size of display 
+#setting up size of display
+wnd = 'HSVBars'
+lh = 'Lower Hue'
+uh = 'Upper Hue'
+ls = 'Lower Saturation'
+us = 'Upper Saturation'
+lv = 'Lower Value'
+uv = 'Upper Value'
+cv2.namedWindow('HSVBars', cv2.WINDOW_NORMAL)
 cv2.namedWindow("frame", cv2.WINDOW_NORMAL)
 cv2.resizeWindow("frame", 100,100)
 cv2.namedWindow("original", cv2.WINDOW_NORMAL)
 cv2.resizeWindow("original", 100,100)
-	
+#HSV
+lower = np.array([25, 80, 120])
+upper = np.array([75, 185, 255])
+
 #could increase erosion to deal with picking up brighter shades,but as it increases, we lose our ability to pick up sides not facing the cam directly
-erosionKernel = np.ones((1,1), np.uint8)
-dilateKernel = np.ones((1,1), np.uint8)
+erosionKernel = np.ones((3,3), np.uint8)
+dilateKernel = np.ones((0,0), np.uint8)
 
 #as we raise S value, we stop registering brighter shades
 #determine how important seeing said brighter shades
 #at current vals, unable to see side being illuminated from most angles
-#lower = np.array([15,120,114])  # HSV
-#upper = np.array([32,255,255])
-lower = np.array([70,50,30])
-upper = np.array([100,255,255])
 
+
+
+NetworkTables.initialize('10.13.89.99') 
+sd = NetworkTables.getTable('vision')
 cap = cv2.VideoCapture(0)
 count = 0
+i = 0
 while(True):
+	error = 0
+
 	#setting up size of display window 
 	#reading every frame
 	ret, img = cap.read()
 	default = img
-	#height, width = img.shape[:2]
-	#lower = np.array([lH,lS,lV])
-	#upper = np.array([hH,hS,hV])
+	height, width = img.shape[:2]
+	
 	#increased upper HSV vals	
 	if cv2.waitKey(1) & 0xFF == ord('q'):
         	break
@@ -48,6 +68,8 @@ while(True):
 	    # Convert the image from RGB to HSV color space.  This is required for the next operation.
 	hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
 
+        #upper = np.array([100,102,204])er = np.array([lowh, lows, lowv])
+	upper = np.array([uph, ups, upv])
 	    # Create a new image that contains yellow where the color was detected, otherwise purple? or black?
 	img = cv2.inRange(hsv, lower, upper)
 	img = cv2.erode(img, erosionKernel, iterations =1)
@@ -69,28 +91,37 @@ while(True):
 	    # If no contours are detected, then don't try to process them or you'll get an error:
 	if len(contours) > 0:
 		cnt1 = contours[0]
+		area = cv2.contourArea(cnt1)
 		
 		# Draw a minimum area rectangle around the contour
-	#rect1 = np.int32(cv2.boxPoints(cv2.minAreaRect(cnt1)))
+		rect1 = np.int32(cv2.boxPoints(cv2.minAreaRect(cnt1)))
 		
 		# Draw the contour over image
-	#cv2.drawContours(img, [rect1], -1, (255, 0, 0), 2)
-	#M1 = cv2.moments(cnt1)
-	#cx1 = int(M1['m10']/M1['m00'])
-	#cy1 = int(M1['m01']/M1['m00'])
+		cv2.drawContours(img, [rect1], -1, (255, 0, 0), 2)
+		M1 = cv2.moments(cnt1)
+		cx1 = int(M1['m10']/M1['m00'])
+		cy1 = int(M1['m01']/M1['m00'])
 	#draw center of cube on image in red
-	#cv2.circle(img,(cx1,cy1), 50, (0,0,255))
+		cv2.circle(img,(cx1,cy1), 50, (0,0,255))
 	#display center of image on img in white
-	#centX = int(width/2)
-	#centY = int(height/2)
+		centX = int(width/2)
+		centY = int(height/2)
 	#error to be sent over network tables
-	#error = centX - cx1
-	#cv2.circle(img, (centX, centY),30, (255,255,255)) 
+		error = centX - cx1
+		if area < 200:
+                       error = 0 
+		cv2.circle(img, (centX, centY),30, (255,255,255))
+		#print(error)
+	sd.putNumber('error', error)
 	cv2.imshow('frame', img)
 	cv2.imshow('original', default)
+
 
 
 
 # When everything done, release the capture
 cap.release()
 cv2.destroyAllWindows()
+
+
+
